@@ -102,12 +102,6 @@ int main(int argc, char** argv){
   //int* first_set_parts = new int[net_offset];
   //int* second_set_parts = new int[no_nets - net_offset];
 
-  int* first_set_new_name = new int[net_offset];
-  int* second_set_new_name = new int[no_nets - net_offset];
-
-  int next_first_name = 0;
-  int next_second_name = 1;
-
 
   /*-----FOUND INNER NETS-----*/
   std::vector<int> vec;
@@ -151,21 +145,21 @@ int main(int argc, char** argv){
   memset(part_count, 0, sizeof(int)*no_parts);
 
   for(int i = 0; i < net_offset; i++){
-    std::cout << "##############" << std::endl;
+    //std::cout << "##############" << std::endl;
     for(int j = 0; j < first_net_set[i].size(); j++){
       part_count[partvec[first_net_set[i][j]]+1] += 1;
     }
     int max_part = 0;
     int max_part_count = 0;
     for(int i = 0; i < no_parts; i++){
-      std::cout << "Part count " << i << " :" << part_count[i] << std::endl;;
+      //std::cout << "Part count " << i << " :" << part_count[i] << std::endl;;
       if(part_count[i] > max_part_count){
 	max_part = i;
 	max_part_count = part_count[i];
       }
     }
-    std::cout << "Assigned net " << i << " to part " << max_part << std::endl;
-    std::cout << "##############" << std::endl;
+    //std::cout << "Assigned net " << i << " to part " << max_part << std::endl;
+    //std::cout << "##############" << std::endl;
     first_set_parts[max_part].push_back(i);
     memset(part_count, 0, sizeof(int)*no_parts);
   }
@@ -193,7 +187,64 @@ int main(int argc, char** argv){
   for(int i = 0; i < no_parts; i++){
     std::cout << "SNets assigned to part " << i << ": " << second_set_parts[i].size() << std::endl;
   }
+
   
+  int* first_set_new_name = new int[net_offset];
+  int* second_set_new_name = new int[no_nets - net_offset];
+
+  int next_first_name = 1;
+  int next_second_name = 1;
+
+  for(int i = 0; i < no_parts; i++){
+    for(int j = 0; j < first_set_parts[i].size();j++){
+      first_set_new_name[first_set_parts[i][j]] = next_first_name++;
+    }
+  }
+
+  for(int i = 0; i < no_parts; i++){
+    for(int j = 0; j < second_set_parts[i].size();j++){
+      first_set_new_name[second_set_parts[i][j]] = next_second_name++;
+    }
+  }
+  
+  for(int i = 0; i < 100; i++){
+    std::cout << "Net " << i << " renamed to " << first_set_new_name[i] << std::endl; 
+  }
+
+  /*-----Read the tensor-----*/
+  std::string tensorname = argv[5];
+
+  std::ifstream intensor(tensorname);
+  std::ofstream outtensor(ofname);
+
+  std::cout << "Write mode" << std::endl;
+  
+  int tensordims[3];
+  double tenval;
+  int mod_switch = 0;
+
+  int cur_line = 0;
+  
+  while(!intensor.eof()){
+    //std::cout << "Current line: " << cur_line << std::endl;
+    intensor >> tensordims[0] >> tensordims[1] >> tensordims[2] >> tenval;
+    //std::cout << "Got: " << tensordims[0] << " " << tensordims[1] << " " << tensordims[2] << std::endl;
+    
+    for(int i = 0; i < 3; i++){
+      if(i == longest_mode){
+	outtensor << tensordims[i] << " ";
+      }
+      else{
+	if(!mod_switch){
+	  outtensor << first_set_new_name[tensordims[i]] << " ";
+	  mod_switch = 1;
+	}
+	else outtensor << second_set_new_name[tensordims[i]] << " ";
+      }
+    }
+    outtensor << val << std::endl;
+    mod_switch = 0;
+  }
 }
 
 
