@@ -118,22 +118,24 @@ int main(int argc, char** argv){
       first_set_is_inner[i] = 1;
       std::cout << "Found inner net: " << i << std::endl;
       for(int r = 0; r < first_net_set[i].size(); r++){
-	std::cout << first_net_set[i][r];
+	std::cout << first_net_set[i][r] << " ";
       }
+      std::cout << std::endl;
     }
     else{
       first_set_is_inner[i] = 0;
     }
   }
 
-  for(int i = 0; i < no_nets - net_offset; i++){
+  for(int i = 0; i < no_nets - net_offset - 1; i++){
     vec = second_net_set[i];
     if(std::adjacent_find(vec.begin(), vec.end(), std::not_equal_to<>() ) == vec.end()){ //Is all pins falls in same partition, that is an inner net
       second_set_is_inner[i] = 1;
       std::cout << "Found inner net: " << i << std::endl;
       for(int r = 0; r < second_net_set[i].size(); r++){
-	std::cout << second_net_set[i][r];
+	std::cout << "Found inner net: " << i << std::endl;
       }
+      std::cout << std::endl;
     }
     else{
       second_set_is_inner[i] = 0;
@@ -149,30 +151,36 @@ int main(int argc, char** argv){
   memset(part_count, 0, sizeof(int)*no_parts);
 
   for(int i = 0; i < net_offset; i++){
-    //std::cout << "##############" << std::endl;
+    std::cout << "##############" << std::endl;
     for(int j = 0; j < first_net_set[i].size(); j++){
-      part_count[partvec[first_net_set[i][j]]] += 1;
+      part_count[partvec[first_net_set[i][j]]+1] += 1;
     }
     int max_part = 0;
+    int max_part_count = 0;
     for(int i = 0; i < no_parts; i++){
-      //std::cout << "Part count " << i << " :" << part_count[i] << std::endl;;
-      if(part_count[i] > max_part)
+      std::cout << "Part count " << i << " :" << part_count[i] << std::endl;;
+      if(part_count[i] > max_part_count){
 	max_part = i;
+	max_part_count = part_count[i];
+      }
     }
-    //std::cout << "Assigned net " << i << " to part " << max_part << std::endl;
-    //std::cout << "##############" << std::endl;
+    std::cout << "Assigned net " << i << " to part " << max_part << std::endl;
+    std::cout << "##############" << std::endl;
     first_set_parts[max_part].push_back(i);
     memset(part_count, 0, sizeof(int)*no_parts);
   }
 
   for(int i = 0; i < no_nets - net_offset; i++){
     for(int j = 0; j < second_net_set[i].size(); j++){
-      part_count[partvec[second_net_set[i][j]]] += 1;
+      part_count[partvec[second_net_set[i][j]]+1] += 1;
     }
     int max_part = 0;
+    int max_part_count = 0;
     for(int i = 0; i < no_parts; i++){
-      if(part_count[i] > max_part)
+      if(part_count[i] > max_part_count){
 	max_part = i;
+	max_part_count = part_count[i];
+      }
     }
     second_set_parts[max_part].push_back(i);
     memset(part_count, 0, sizeof(int)*no_parts);
