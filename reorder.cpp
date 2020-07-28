@@ -36,12 +36,12 @@ int main(int argc, char** argv){
 
   std::cout << "In Hg: " << "| No vertices: " << no_vertices << " | No nets: " << no_nets << " | NNz: " << nnz << " |" <<std::endl;
   
-  std::vector<int>* first_net_set = new std::vector<int>[net_offset];
-  std::vector<int>* second_net_set = new std::vector<int>[no_nets - net_offset];
+  std::vector<int>* first_net_set = new std::vector<int>[net_offset + 1];
+  std::vector<int>* second_net_set = new std::vector<int>[no_nets - net_offset + 1];
 
   std::cout << "Allocated mem for nets" << std::endl;
 
-  int current_net = 0;
+  int current_net = 1;
   
   while(std::getline(readhg, line)){
     //std::cout << "Current net: " << current_net << std::endl;  
@@ -49,10 +49,14 @@ int main(int argc, char** argv){
     int vertex;
     while(!iss.eof()){
       iss >> vertex;
-      if(current_net < net_offset)
+      if(current_net <= net_offset){
+	//std::cout << "No switch, current net: " << current_net << std::endl;
 	first_net_set[current_net].push_back(vertex);
-      else
+      }
+      else{
+	//std::cout << "First time switch, current net: " << current_net << std::endl;
 	second_net_set[current_net-net_offset].push_back(vertex);
+      }
     }
     current_net++;
   }
@@ -89,7 +93,7 @@ int main(int argc, char** argv){
 /*-----READ PARTVECTOR-----*/
 
 
-#define PRINTPART
+//#define PRINTPART
 #ifdef PRINTPART
   for(int i = 1; i < 11; i++){
     std::cout << partvec[i] << std::endl;
@@ -103,7 +107,7 @@ int main(int argc, char** argv){
   //int* second_set_parts = new int[no_nets - net_offset];
 
 
-  /*-----FOUND INNER NETS-----*/
+  /*-----FOUND INNER NETS-----
   std::vector<int> vec;
 
   for(int i = 0; i < net_offset; i++){
@@ -135,16 +139,17 @@ int main(int argc, char** argv){
       second_set_is_inner[i] = 0;
     }
   }
+
   /*-----FOUND INNER NETS-----*/
 
 
   std::vector<int>* first_set_parts = new std::vector<int>[no_parts];
-  std::vector<int>* second_set_parts = new std::vector<int>[no_parts];
+  std::vector<int>* second_set_parts = new  std::vector<int>[no_parts];
   
   int* part_count = new int[no_parts];
   memset(part_count, 0, sizeof(int)*no_parts);
 
-  for(int i = 0; i < net_offset; i++){
+  for(int i = 1; i < net_offset+1; i++){
     //std::cout << "##############" << std::endl;
     for(int j = 0; j < first_net_set[i].size(); j++){
       part_count[partvec[first_net_set[i][j]]+1] += 1;
@@ -164,7 +169,7 @@ int main(int argc, char** argv){
     memset(part_count, 0, sizeof(int)*no_parts);
   }
 
-  for(int i = 0; i < no_nets - net_offset; i++){
+  for(int i = 1; i < no_nets - net_offset+1; i++){
     for(int j = 0; j < second_net_set[i].size(); j++){
       part_count[partvec[second_net_set[i][j]]+1] += 1;
     }
@@ -203,11 +208,11 @@ int main(int argc, char** argv){
 
   for(int i = 0; i < no_parts; i++){
     for(int j = 0; j < second_set_parts[i].size();j++){
-      first_set_new_name[second_set_parts[i][j]] = next_second_name++;
+      second_set_new_name[second_set_parts[i][j]] = next_second_name++;
     }
   }
   
-  for(int i = 0; i < 100; i++){
+  for(int i = 1; i < 100; i++){
     std::cout << "Net " << i << " renamed to " << first_set_new_name[i] << std::endl; 
   }
 
@@ -245,6 +250,25 @@ int main(int argc, char** argv){
     outtensor << val << std::endl;
     mod_switch = 0;
   }
+
+  for(int i = 0; i < no_parts; i++){
+    std::cout << "##############" << std::endl;
+    std::cout << "Part " << i << " nets: " << std::endl;
+    for(int j = 0; j < first_set_parts[i].size(); j++){
+      std::cout << first_set_parts[i][j] << " -name-> " << first_set_new_name[first_set_parts[i][j]] << std::endl;
+    }
+    std::cout << "##############" << std::endl;
+  }
+
+  for(int i = 0; i < no_parts; i++){
+    std::cout << "##############" << std::endl;
+    std::cout << "Part " << i << " nets: " << std::endl;
+    for(int j = 0; j < second_set_parts[i].size(); j++){
+      std::cout << second_set_parts[i][j] << " -name-> " << second_set_new_name[second_set_parts[i][j]] << std::endl;
+    }
+    std::cout << "##############" << std::endl;
+  }
+  
 }
 
 
