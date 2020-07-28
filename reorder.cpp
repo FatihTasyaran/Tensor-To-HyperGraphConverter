@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <cstring>
 #include <vector>
 #include <algorithm>
 
@@ -98,8 +99,8 @@ int main(int argc, char** argv){
   bool* first_set_is_inner = new bool[net_offset];
   bool* second_set_is_inner = new bool[no_nets - net_offset];
 
-  int* first_set_parts = new int[net_offset];
-  int* second_set_parts = new int[no_nets - net_offset];
+  //int* first_set_parts = new int[net_offset];
+  //int* second_set_parts = new int[no_nets - net_offset];
 
   int* first_set_new_name = new int[net_offset];
   int* second_set_new_name = new int[no_nets - net_offset];
@@ -107,20 +108,84 @@ int main(int argc, char** argv){
   int next_first_name = 0;
   int next_second_name = 1;
 
+
+  /*-----FOUND INNER NETS-----*/
+  std::vector<int> vec;
+
   for(int i = 0; i < net_offset; i++){
-    std::cout << "Net " << i << " parts: " << std::endl;
-    for(int j = 0; j < first_net_set[i].size();j++){
-      std::cout << partvec[first_net_set[i][j]] << " ";
+    vec = first_net_set[i];
+    if(std::adjacent_find(vec.begin(), vec.end(), std::not_equal_to<>() ) == vec.end()){ //Is all pins falls in same partition, that is an inner net
+      first_set_is_inner[i] = 1;
+      std::cout << "Found inner net: " << i << std::endl;
+      for(int r = 0; r < first_net_set[i].size(); r++){
+	std::cout << first_net_set[i][r];
+      }
     }
-    std::cout << "\n" << std::endl;
+    else{
+      first_set_is_inner[i] = 0;
+    }
   }
 
   for(int i = 0; i < no_nets - net_offset; i++){
-    std::cout << "SNet " << i << " parts: " << std::endl;
-    for(int j = 0; j < second_net_set[i].size();j++){
-      std::cout << partvec[second_net_set[i][j]] << " ";
+    vec = second_net_set[i];
+    if(std::adjacent_find(vec.begin(), vec.end(), std::not_equal_to<>() ) == vec.end()){ //Is all pins falls in same partition, that is an inner net
+      second_set_is_inner[i] = 1;
+      std::cout << "Found inner net: " << i << std::endl;
+      for(int r = 0; r < second_net_set[i].size(); r++){
+	std::cout << second_net_set[i][r];
+      }
     }
-    std::cout << "\n" << std::endl;
+    else{
+      second_set_is_inner[i] = 0;
+    }
+  }
+  /*-----FOUND INNER NETS-----*/
+
+
+  std::vector<int>* first_set_parts = new std::vector<int>[no_parts];
+  std::vector<int>* second_set_parts = new std::vector<int>[no_parts];
+  
+  int* part_count = new int[no_parts];
+  memset(part_count, 0, sizeof(int)*no_parts);
+
+  for(int i = 0; i < net_offset; i++){
+    //std::cout << "##############" << std::endl;
+    for(int j = 0; j < first_net_set[i].size(); j++){
+      part_count[partvec[first_net_set[i][j]]] += 1;
+    }
+    int max_part = 0;
+    for(int i = 0; i < no_parts; i++){
+      //std::cout << "Part count " << i << " :" << part_count[i] << std::endl;;
+      if(part_count[i] > max_part)
+	max_part = i;
+    }
+    //std::cout << "Assigned net " << i << " to part " << max_part << std::endl;
+    //std::cout << "##############" << std::endl;
+    first_set_parts[max_part].push_back(i);
+    memset(part_count, 0, sizeof(int)*no_parts);
+  }
+
+  for(int i = 0; i < no_nets - net_offset; i++){
+    for(int j = 0; j < second_net_set[i].size(); j++){
+      part_count[partvec[second_net_set[i][j]]] += 1;
+    }
+    int max_part = 0;
+    for(int i = 0; i < no_parts; i++){
+      if(part_count[i] > max_part)
+	max_part = i;
+    }
+    second_set_parts[max_part].push_back(i);
+    memset(part_count, 0, sizeof(int)*no_parts);
+  }
+
+  for(int i = 0; i < no_parts; i++){
+    std::cout << "Nets assigned to part " << i << ": " << first_set_parts[i].size() << std::endl;
+  }
+
+  for(int i = 0; i < no_parts; i++){
+    std::cout << "SNets assigned to part " << i << ": " << second_set_parts[i].size() << std::endl;
   }
   
 }
+
+
