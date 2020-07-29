@@ -47,6 +47,8 @@ int main(int argc, char** argv){
 
   int longest_mode = 0;
   int no_nets, no_vertices;
+
+  int no_nnz = 0;
   
   std::cout << "NNz: " << no_lines << "| mode-1 len: " << i_max << "| mode-2 len: " << j_max << "| mode-3 len: " << k_max << std::endl; 
 
@@ -119,13 +121,17 @@ int main(int argc, char** argv){
       if(dim != longest_mode){
 	if(offset_cursor == 0){
 	  //std::cout << "Pushing " << nnz_dims[longest_mode] << " to net " << nnz_dims[dim] << std::endl;
-	  if (std::find(nets[nnz_dims[dim]].begin(), nets[nnz_dims[dim]].end(), nnz_dims[longest_mode]) == nets[nnz_dims[dim]].end())
+	  if (std::find(nets[nnz_dims[dim]].begin(), nets[nnz_dims[dim]].end(), nnz_dims[longest_mode]) == nets[nnz_dims[dim]].end()){
 	    nets[nnz_dims[dim]].push_back(nnz_dims[longest_mode]);
+	    no_nnz++;
+	  }
 	}
 	else{
 	  //std::cout << "Pushing " << nnz_dims[longest_mode] << " to net " << nnz_dims[dim] + net_offset << std::endl;
-	  if (std::find(nets[nnz_dims[dim]+net_offset].begin(), nets[nnz_dims[dim]+net_offset].end(), nnz_dims[longest_mode]) == nets[nnz_dims[dim]+net_offset].end())
+	  if (std::find(nets[nnz_dims[dim]+net_offset].begin(), nets[nnz_dims[dim]+net_offset].end(), nnz_dims[longest_mode]) == nets[nnz_dims[dim]+net_offset].end()){
 	    nets[nnz_dims[dim]+net_offset].push_back(nnz_dims[longest_mode]);
+	    no_nnz++;
+	  }
 	}
 	offset_cursor = 1;
       }
@@ -146,7 +152,7 @@ int main(int argc, char** argv){
   
   std::ofstream write(ofname);
   
-  write << "1 " << no_vertices << " " << no_nets << " " << no_lines << std::endl;
+  write << "1 " << no_vertices << " " << no_nets << " " << no_nnz << std::endl;
   
   for(int i = 1; i < no_nets+1; i++){
     for(int j = 0; j < nets[i].size()-1; j++){
