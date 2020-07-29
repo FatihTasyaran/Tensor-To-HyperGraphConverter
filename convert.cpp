@@ -148,7 +148,7 @@ int main(int argc, char** argv){
   
   write << "1 " << no_vertices << " " << no_nets << " " << no_lines << std::endl;
   
-  for(int i = 1; i < no_nets; i++){
+  for(int i = 1; i < no_nets+1; i++){
     for(int j = 0; j < nets[i].size()-1; j++){
       write << nets[i][j] << " ";
     }
